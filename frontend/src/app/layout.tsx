@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Syne, DM_Sans } from "next/font/google";
-
+import ServerPing from "@/components/ServerPing";
 import "@/styles/globals.css";
 
 const syne = Syne({
@@ -54,6 +54,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-[#030712] text-white antialiased">
+        <ServerPing />
         {children}
       </body>
     </html>

@@ -4,3 +4,4 @@ openai
 pydantic
 slowapi
 structlog
+prometheus-fastapi-instrumentator

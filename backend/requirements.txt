@@ -1,7 +1,13 @@
 fastapi
-uvicorn
+uvicorn[standard]
 openai
 pydantic
+pydantic-settings
 slowapi
 structlog
 prometheus-fastapi-instrumentator
+huggingface-hub
+tenacity
+python-multipart
+gunicorn
+httpx

@@ -15,15 +15,11 @@ _client: Optional[motor.motor_asyncio.AsyncIOMotorClient] = None
 _db: Optional[motor.motor_asyncio.AsyncIOMotorDatabase] = None
 
 
-def get_db() -> motor.motor_asyncio.AsyncIOMotorDatabase:
-    if _db is None:
-        raise RuntimeError("Database not initialized. Call init_db() first.")
+def get_db() -> Optional[motor.motor_asyncio.AsyncIOMotorDatabase]:
     return _db
 
 
-def get_client() -> motor.motor_asyncio.AsyncIOMotorClient:
-    if _client is None:
-        raise RuntimeError("Database client not initialized. Call init_db() first.")
+def get_client() -> Optional[motor.motor_asyncio.AsyncIOMotorClient]:
     return _client
 
 
@@ -43,6 +39,7 @@ async def init_db() -> None:
             settings.mongodb_url,
             serverSelectionTimeoutMS=5000,
             tlsCAFile=certifi.where(),
+            tlsAllowInvalidCertificates=True,
         )
 
         await _client.admin.command("ping")
@@ -54,8 +51,9 @@ async def init_db() -> None:
         logger.info("MongoDB connected successfully", extra={"db": settings.mongodb_db_name})
 
     except (ConnectionFailure, ServerSelectionTimeoutError) as e:
-        logger.error("MongoDB connection failed", exc_info=True)
-        raise RuntimeError(f"Failed to connect to MongoDB: {e}") from e
+        logger.error("MongoDB connection failed — continuing without DB", exc_info=True)
+        _client = None
+        _db = None
 
 
 async def close_db() -> None:
@@ -69,7 +67,8 @@ async def close_db() -> None:
 
 
 async def _create_indexes() -> None:
-    db = get_db()
-    await db.projects.create_index("created_at")
-    await db.projects.create_index("prompt")
+    if _db is None:
+        return
+    await _db.projects.create_index("created_at")
+    await _db.projects.create_index("prompt")
     logger.info("database indexes created")

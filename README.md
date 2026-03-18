@@ -9,7 +9,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js" />
   <img src="https://img.shields.io/badge/FastAPI-0.110-009688?style=flat-square&logo=fastapi" />
-  <img src="https://img.shields.io/badge/HuggingFace-Meta--Llama--3-FFD21E?style=flat-square&logo=huggingface" />
+  <img src="https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?style=flat-square&logo=openai" />
   <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" />
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python" />
   <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb" />
@@ -22,19 +22,21 @@
   <a href="#-getting-started">Getting Started</a> •
   <a href="#-project-structure">Structure</a> •
   <a href="#-api-reference">API</a> •
-  <a href="#-documentation">Documentation</a>
+  <a href="#-deployment">Deployment</a>
 </p>
 
----
+<p align="center">
+  🌐 <strong>Live Demo</strong>: <a href="https://siteforge-ai-ten.vercel.app">siteforge-ai-ten.vercel.app</a> &nbsp;•&nbsp;
+  🔗 <strong>API Docs</strong>: <a href="https://siteforge-ai-5p5i.onrender.com/docs">siteforge-ai-5p5i.onrender.com/docs</a>
+</p>
 
-![SiteForge AI Preview](frontend/public/preview.png)
 </div>
 
 ---
 
 ## 🎯 What is SiteForge AI?
 
-**SiteForge AI** is a full-stack AI-powered website generator. Describe any website in plain English and get a complete, structured, responsive website — with navbar, hero, features, image gallery, contact form, footer, and SEO metadata — generated in seconds using Meta-Llama-3-8B-Instruct via Hugging Face.
+**SiteForge AI** is a full-stack AI-powered website generator. Describe any website in plain English and get a complete, structured, responsive website — with navbar, hero, features, image gallery, contact form, and footer — generated in seconds using GPT-4o-mini via the OpenAI API.
 
 > *"A modern SaaS landing page for a project management tool"* → Full website, instantly.
 
@@ -42,14 +44,12 @@
 
 ## ✨ Features
 
-- 🤖 **AI Generation** — Powered by Meta-Llama-3-8B-Instruct via Hugging Face Inference API
+- 🤖 **AI Generation** — Powered by GPT-4o-mini via OpenAI API
 - ✏️ **Inline Editing** — Click any text in the preview to edit it directly
-- 🔄 **Section Regeneration** — Hover any section and regenerate it independently
-- 🔍 **SEO Generation** — Auto-generates title, description, keywords, and OG tags
-- 📦 **Export to ZIP** — Download complete HTML/CSS/JS files ready to deploy
-- 🗂 **Project History** — All generated websites saved to MongoDB, browsable in a drawer
 - 🖼 **Image Gallery** — AI-generated gallery with lightbox viewer
 - 📬 **Contact Form** — Fully functional contact form section
+- 📦 **Export to ZIP** — Download complete HTML/CSS/JS files ready to deploy
+- 🗂 **Project History** — All generated websites saved to MongoDB
 - ⚡ **~5-10s Generation** — Fast, real-time feedback with loading phases
 - 📱 **Fully Responsive** — Works on desktop, tablet, and mobile
 - 🔒 **Production Ready** — Rate limiting, input validation, error handling, structured logging
@@ -71,14 +71,14 @@
 | Technology | Purpose |
 |---|---|
 | FastAPI | API framework |
-| Hugging Face Inference API | AI generation |
-| Meta-Llama-3-8B-Instruct | LLM model |
+| OpenAI API | AI generation |
+| GPT-4o-mini | LLM model |
 | Pydantic v2 | Data validation |
 | Motor (async) | MongoDB driver |
 | Tenacity | Retry logic |
 | structlog | Structured logging |
 | slowapi | Rate limiting |
-| Uvicorn | ASGI server |
+| Uvicorn + Gunicorn | ASGI server |
 
 ### Database
 | Technology | Purpose |
@@ -94,7 +94,7 @@
 
 - **Node.js** 18+
 - **Python** 3.11+
-- **Hugging Face API Key** — [Get one here](https://huggingface.co/settings/tokens)
+- **OpenAI API Key** — [Get one here](https://platform.openai.com/api-keys)
 - **MongoDB Atlas** — [Free cluster here](https://cloud.mongodb.com)
 
 ---
@@ -119,16 +119,13 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Configure environment
-cp .env.example .env
 ```
 
-Edit `backend/.env`:
+Create `backend/.env`:
 
 ```env
 ENVIRONMENT=development
-HUGGINGFACE_API_KEY=hf_your_key_here
+OPENAI_API_KEY=sk-proj-your-key-here
 MONGODB_URL=mongodb+srv://user:pass@cluster.mongodb.net/siteforge?appName=Cluster0
 MONGODB_DB_NAME=siteforge
 ```
@@ -151,12 +148,9 @@ cd frontend
 
 # Install dependencies
 npm install
-
-# Configure environment
-cp .env.example .env.local
 ```
 
-Edit `frontend/.env.local`:
+Create `frontend/.env.local`:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
@@ -193,46 +187,39 @@ siteforge-ai/
 │       │   │   └── ContactFormSection.tsx  # Contact form
 │       │   ├── ui/
 │       │   │   ├── Button.tsx         # Reusable button component
-│       │   │   ├── EditableText.tsx   # Click-to-edit text component
-│       │   │   └── RegenerateButton.tsx    # Section regenerate button
-│       │   ├── WebsitePreview.tsx     # Preview orchestrator
-│       │   ├── ProjectHistory.tsx     # Saved projects drawer
-│       │   └── SEOHead.tsx            # SEO meta tag injector
+│       │   │   └── EditableText.tsx   # Click-to-edit text component
+│       │   ├── WebsitePreview.tsx     # Preview orchestrator with editing
+│       │   └── ServerPing.tsx         # Render cold start prevention
 │       ├── hooks/
 │       │   ├── useGenerate.ts         # Generation state hook
-│       │   ├── useEditableWebsite.ts  # Inline editing state hook
-│       │   └── useRegenerate.ts       # Section regeneration hook
+│       │   └── useEditableWebsite.ts  # Inline editing state hook
 │       ├── lib/
 │       │   ├── api.ts                 # Axios client + all API calls
 │       │   └── utils.ts               # cn() utility
 │       └── types/
 │           └── website.ts             # TypeScript interfaces
 │
-├── backend/                           # FastAPI App
-│   └── app/
-│       ├── main.py                    # App factory + middleware
-│       ├── core/
-│       │   ├── config.py              # Pydantic settings
-│       │   ├── database.py            # MongoDB connection
-│       │   └── logger.py              # Structured logging
-│       ├── routes/
-│       │   ├── generate.py            # POST /v1/generate/generate
-│       │   │                          # POST /v1/generate/regenerate
-│       │   ├── export.py              # POST /v1/export/export
-│       │   ├── projects.py            # CRUD /v1/projects/
-│       │   └── health.py              # GET  /v1/health
-│       ├── services/
-│       │   ├── llm_service.py         # Hugging Face integration
-│       │   └── template_service.py    # Fallback enhancer
-│       ├── schemas/
-│       │   └── website_schema.py      # Pydantic website models
-│       └── utils/
-│           ├── parser.py              # LLM JSON parser
-│           └── validator.py           # Website validator
-│
-└── docs/
-    ├── ARCHITECTURE.md                # System architecture diagram
-    └── MODEL_SELECTION.md             # AI model rationale
+└── backend/                           # FastAPI App
+    └── app/
+        ├── main.py                    # App factory + middleware
+        ├── core/
+        │   ├── config.py              # Pydantic settings
+        │   ├── database.py            # MongoDB connection
+        │   └── logger.py              # Structured logging
+        ├── routes/
+        │   ├── generate.py            # POST /v1/generate/generate
+        │   ├── export.py              # POST /v1/export/export
+        │   ├── projects.py            # CRUD /v1/projects/
+        │   ├── health.py              # GET  /v1/health
+        │   └── templates.py           # GET  /v1/templates
+        ├── services/
+        │   ├── llm_service.py         # OpenAI integration
+        │   └── template_service.py    # Fallback enhancer
+        ├── schemas/
+        │   └── website_schema.py      # Pydantic website models
+        └── utils/
+            ├── parser.py              # LLM JSON parser
+            └── validator.py           # Website validator
 ```
 
 ---
@@ -256,30 +243,13 @@ Content-Type: application/json
 {
   "status": "success",
   "data": {
-    "seo": { "title": "...", "description": "...", "keywords": [...] },
-    "navbar": { "logo": "ProjectFlow", "links": ["Home", "Features"] },
-    "hero": { "title": "...", "subtitle": "...", "cta": "..." },
+    "navbar": { "logo": "ProjectFlow", "links": ["Home", "Features", "Pricing"] },
+    "hero": { "title": "Manage Projects Effortlessly", "subtitle": "...", "cta": "Get Started" },
     "features": [{ "title": "...", "description": "...", "icon": "🚀" }],
-    "gallery": [{ "url": "...", "alt": "...", "caption": "..." }],
-    "contact": { "title": "...", "fields": [...], "submit_label": "..." },
-    "footer": { "text": "...", "social": ["twitter", "github"] }
+    "gallery": [{ "url": "https://picsum.photos/seed/work/600/400", "alt": "...", "caption": "..." }],
+    "contact": { "title": "Get In Touch", "fields": [...], "submit_label": "Send Message" },
+    "footer": { "text": "© 2026 ProjectFlow. All rights reserved.", "social": ["twitter", "github"] }
   }
-}
-```
-
-### Regenerate Section
-
-```http
-POST /v1/generate/regenerate
-Content-Type: application/json
-```
-
-**Request**
-```json
-{
-  "prompt": "A SaaS landing page",
-  "section": "hero",
-  "current_website": { ... }
 }
 ```
 
@@ -287,9 +257,10 @@ Content-Type: application/json
 
 ```http
 POST /v1/export/export
+Content-Type: application/json
 ```
 
-Returns a downloadable ZIP containing `index.html`, `styles.css`, `script.js`.
+Returns a downloadable ZIP containing `index.html`, `styles.css`, `script.js`, `README.txt`.
 
 ### Projects
 
@@ -297,17 +268,26 @@ Returns a downloadable ZIP containing `index.html`, `styles.css`, `script.js`.
 |---|---|---|
 | `GET` | `/v1/projects/` | List all saved projects |
 | `POST` | `/v1/projects/` | Save a project |
-| `GET` | `/v1/projects/{id}` | Get a project |
+| `GET` | `/v1/projects/{id}` | Get a project by ID |
 | `DELETE` | `/v1/projects/{id}` | Delete a project |
+
+### Health Check
+
+```http
+GET /v1/health
+```
+
+```json
+{ "status": "ok" }
+```
 
 ### Error Responses
 
 | Status | Meaning |
 |---|---|
-| `422` | Invalid prompt |
+| `422` | Invalid prompt (too short/long) |
 | `429` | Rate limit exceeded (10 req/min) |
-| `502` | AI service error |
-| `503` | Model loading — wait 20s and retry |
+| `502` | OpenAI API error |
 | `504` | Request timed out |
 
 ---
@@ -318,8 +298,8 @@ Returns a downloadable ZIP containing `index.html`, `styles.css`, `script.js`.
 
 | Variable | Required | Description |
 |---|---|---|
-| `ENVIRONMENT` | No | `development` or `production` |
-| `HUGGINGFACE_API_KEY` | **Yes** | Your Hugging Face access token |
+| `ENVIRONMENT` | No | `development` or `production` (default: `development`) |
+| `OPENAI_API_KEY` | **Yes** | Your OpenAI API key |
 | `MONGODB_URL` | **Yes** | MongoDB Atlas connection string |
 | `MONGODB_DB_NAME` | No | Database name (default: `siteforge`) |
 
@@ -335,48 +315,61 @@ Returns a downloadable ZIP containing `index.html`, `styles.css`, `script.js`.
 
 ### Backend → Render
 
+**Root Directory:** `backend`
+
+**Build Command:**
 ```bash
-# Start command
+pip install -r requirements.txt
+```
+
+**Start Command:**
+```bash
 gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
 ```
 
-Set environment variables in Render dashboard:
+**Environment Variables in Render dashboard:**
 ```env
 ENVIRONMENT=production
-HUGGINGFACE_API_KEY=hf_...
+OPENAI_API_KEY=sk-proj-...
 MONGODB_URL=mongodb+srv://...
 MONGODB_DB_NAME=siteforge
 ```
 
 ### Frontend → Vercel
 
-```bash
-npm install -g vercel
-vercel --prod
+**Root Directory:** `frontend`
+**Framework:** Next.js
+**Build Command:** `npm run build`
+
+**Environment Variable in Vercel dashboard:**
+```env
+NEXT_PUBLIC_API_URL=https://siteforge-ai-5p5i.onrender.com
 ```
 
-Set environment variable in Vercel dashboard:
-```env
-NEXT_PUBLIC_API_URL=https://your-backend.onrender.com
-```
+> **Note:** Render's free tier spins down after 15 minutes of inactivity. The app automatically pings the backend on page load to minimize cold start delays.
 
 ---
 
 ## 🛡 Security
 
-- ✅ Rate limiting (10 req/min per IP on generate, 20/min on regenerate)
+- ✅ Rate limiting (10 requests/minute per IP)
 - ✅ Input validation (min 10, max 2000 characters)
 - ✅ CORS restricted to known origins in production
 - ✅ API docs disabled in production
 - ✅ MongoDB SSL with certifi CA bundle
 - ✅ Secrets never committed to git
+- ✅ SQLite blocked in production
 
 ---
 
-## 📚 Documentation
+## 🗺 Roadmap
 
-- [System Architecture](docs/ARCHITECTURE.md) — component diagram and data flow
-- [Model Selection](docs/MODEL_SELECTION.md) — AI model and database rationale
+- [ ] User authentication
+- [ ] One-click subdomain deployment
+- [ ] More section types (pricing, testimonials)
+- [ ] Section-level regeneration
+- [ ] SEO meta generation
+- [ ] Custom color themes
 
 ---
 
@@ -388,8 +381,8 @@ This project is licensed under the **MIT License**.
 
 <div align="center">
 
-Built with ❤️ using **Next.js**, **FastAPI**, and **Hugging Face**
+Built with ❤️ using **Next.js**, **FastAPI**, and **OpenAI**
 
-⭐ Star this repo if you found it useful!
+🌐 **Live**: [siteforge-ai-ten.vercel.app](https://siteforge-ai-ten.vercel.app) &nbsp;•&nbsp; ⭐ Star this repo if you found it useful!
 
 </div>

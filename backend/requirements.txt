@@ -11,3 +11,6 @@ tenacity
 python-multipart
 gunicorn
 httpx
+motor
+pymongo
+certifi

@@ -44,7 +44,7 @@
 
 > *"A modern SaaS landing page for a project management tool"* → Full website, instantly.
 
-🔗 **Live App:** [SiteForge AI](siteforge-ai-sigma.vercel.app)
+🔗 **Live App:** [SiteForge AI](https://siteforge-ai-sigma.vercel.app)
 
 ---
 
